@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 import { jsonObject, jsonArrayMember, jsonMember, TypedJSON } from 'typedjson';
 import { isString } from 'class-validator';
-import * as PACKAGE from "./package";
+import * as PACKAGE from "./interface";
 
 
 export type Metadata = any;
