@@ -1,4 +1,3 @@
-import * as PACKAGE from "./package";
 export type Metadata = any;
 export type Version = number;
 
@@ -21,18 +20,22 @@ export interface Funding {
   readonly kind: string;
 }
 
+export interface Tag {
+  readonly name: string;
+}
+
 export interface Person {
   readonly id: string;
   readonly name: string;
-  readonly email: string;
-  readonly website: string;
-  readonly funding: Funding;
+  readonly email?: string;
+  readonly website?: string;
+  readonly funding?: Funding;
 }
 
 export interface Package {
   readonly format: Version;
   readonly version: Version;
-  readonly name: string;
+  readonly name: PackageId;
   readonly nsfw: boolean;
   readonly title: string;
   readonly thumbnail: string;
@@ -40,7 +43,7 @@ export interface Package {
   readonly updated: Date;
   readonly share: boolean;
   readonly description: string;
-  readonly website: string;
+  readonly website?: string;
   
   /**
    * spdx licence expression
@@ -48,8 +51,8 @@ export interface Package {
   readonly license: string;
   readonly authors: Person[];
   readonly basedOn: PackageId[];
-  readonly funding: Funding;
-  readonly tags: string[];
+  readonly funding?: Funding;
+  readonly tags: Tag[];
   readonly assets: Asset[];
 
   //dependencies?: string[];
@@ -62,5 +65,5 @@ export interface PackageId{
 
 export interface PackageRef extends PackageId {
   readonly version: Version;
-  readonly part?: string;
+  readonly asset?: string;
 }

@@ -1,3 +1,4 @@
+import * as PACKAGE from "./package";
 export type Metadata = any;
 export type Version = number;
 
@@ -8,6 +9,8 @@ export interface Asset {
   readonly info: Metadata;
   readonly dependencies: PackageRef[]
 }
+
+export type PackageRef = string;
 
 export interface File {
   readonly name: string;
@@ -59,7 +62,3 @@ export interface PackageId{
   readonly name: string,
 }
 
-export interface PackageRef extends PackageId {
-  readonly version: Version;
-  readonly asset: string;
-}
