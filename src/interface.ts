@@ -9,9 +9,19 @@ export interface Asset {
   readonly dependencies: PackageRef[]
 }
 
+
+export interface PackageData{
+  readonly package: Package;
+  readonly files: File[];
+  readonly source: string[];
+} 
+
 export interface File {
   readonly name: string;
   readonly size: number;
+  /**
+   * A multihash of the file.
+   */
   readonly hash: string;
 }
 
