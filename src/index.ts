@@ -1,3 +1,3 @@
-export * from "./interface"
+export * from "./package"
 export * from "./converter"
-export * as CLASSES from "./classes"
+export * as CLASSES from "./package"

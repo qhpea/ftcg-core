@@ -1,11 +1,10 @@
-import * as CLASSES from "./classes";
-import * as INTERFACE from "./interface";
+import * as CLASSES from "./package";
 
 import { TypedJSON } from 'typedjson';
 
 const serializer = new TypedJSON(CLASSES.Package);
 
-export function parse(params: any): INTERFACE.Package {
+export function parse(params: any): CLASSES.Package {
     let res = serializer.parse(params);
     if (!res)
         throw new Error("package does not follow schema");
@@ -13,6 +12,6 @@ export function parse(params: any): INTERFACE.Package {
     return res;
 }
 
-export function serialize(value: INTERFACE.Package) {
+export function serialize(value: CLASSES.Package) {
     return serializer.toPlainJson(value);
 }
