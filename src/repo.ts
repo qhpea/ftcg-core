@@ -2,18 +2,18 @@ import 'reflect-metadata';
 
 import * as PACKAGE from "./package";
 
-interface DownloadStats{
+export interface DownloadStats{
     total: number;
     weekly: number;
 }
 
-interface RepoStats {
+export interface RepoStats {
     numPackages: number;
     numAssets: number;
     size: number;
     downloads: DownloadStats;
 }
-interface PackageStats {
+export interface PackageStats {
     packageId: PACKAGE.PackageId;
     /**
      * number
@@ -24,7 +24,7 @@ interface PackageStats {
     downloads: DownloadStats;
 }
 
-interface Repo {
+export interface Repo {
     getPackage(ref: PACKAGE.PackageRef) : Promise<PACKAGE.Package>
     index() : Promise<PACKAGE.PackageRef[]>
     packages() : AsyncGenerator<PACKAGE.Package>
@@ -34,7 +34,7 @@ interface Repo {
     person(id: string): Promise<PACKAGE.Person>
     createScope(name: string) : Promise<boolean>
     versions(id: PACKAGE.PackageId) : Promise<PACKAGE.PackageRef[]>
-    getRepoStatistics(): Promise<RepoStats>
+    getStatistics(): Promise<RepoStats>
 
     download(ref : PACKAGE.PackageRef): Promise<PACKAGE.PackageSource>
     rate(id : PACKAGE.PackageId, stars: number) : Promise<void>

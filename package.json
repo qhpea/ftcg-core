@@ -1,7 +1,7 @@
 {
   "name": "@ftcg/core",
   "license": "AGPL-3.0-or-later",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "dependencies": {
     "class-validator": "^0.13.1",
     "reflect-metadata": "^0.1.13",
