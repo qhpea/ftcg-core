@@ -345,9 +345,11 @@ export class Package {
 
 @jsonObject
 export class PackageSource {
+  @ValidateNested()
   @jsonMember
   ref: PackageRef;
 
+  @IsUrl({require_valid_protocol: false, require_protocol: true})
   @jsonMember
   source: string;
 
