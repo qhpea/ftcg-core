@@ -2726,11 +2726,6 @@ tslib@2.2.0:
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.2.0.tgz#fb2c475977e35e241311ede2693cee1ec6698f5c"
   integrity sha512-gS9GVHRU+RGn5KQM2rllAlR3dU6m7AcpJKdtH8gFvQiC4Otgk98XnmMU+nZenHt/+VhnBPWwgrJsyrdcw6i23w==
 
-tslib@^2.0.1:
-  version "2.3.0"
-  resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.3.0.tgz#803b8cdab3e12ba581a4ca41c8839bbb0dacb09e"
-  integrity sha512-N82ooyxVNm6h1riLCoyS9e3fuJ3AMG2zIZs2Gd1ATcSFjSA23Q0fzjjZeh0jbJvWVDZ0cJT8yaNNaaXHzueNjg==
-
 tslib@~2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.1.0.tgz#da60860f1c2ecaa5703ab7d39bc05b6bf988b97a"
@@ -2759,13 +2754,6 @@ typedarray-to-buffer@^3.1.5:
   integrity sha512-zdu8XMNEDepKKR+XYOXAVPtWui0ly0NtohUscw+UmaHiAWT8hrV1rr//H6V+0DvJ3OQ19S979M0laLfX8rm82Q==
   dependencies:
     is-typedarray "^1.0.0"
-
-typedjson@^1.7.0:
-  version "1.7.0"
-  resolved "https://registry.yarnpkg.com/typedjson/-/typedjson-1.7.0.tgz#6d593971383fef5a0886b5713ca6bfccb2e6a6ba"
-  integrity sha512-MnRgQLwtEcdHqQG0FkT8ebpBG53Wgr/axYRbiD2WL5NcYx8Z2AoCpXvtTfLnuPqOBKG/9JpXq0O/nl2m4wqJYw==
-  dependencies:
-    tslib "^2.0.1"
 
 typescript@^4.3.4:
   version "4.3.4"

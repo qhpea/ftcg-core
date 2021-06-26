@@ -1,5 +1,4 @@
 import { Package, PackageId, Person, Tag } from "../src/package";
-import { jsonObject, jsonMember, TypedJSON } from 'typedjson';
 import { validate } from 'class-validator';
 import { classToPlain, plainToClass } from "../src";
 

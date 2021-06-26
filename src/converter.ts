@@ -1,6 +1,5 @@
 import * as CLASSES from "./package";
 
-import { TypedJSON } from 'typedjson';
 import * as ClassTransformer from "class-transformer";
 
 
