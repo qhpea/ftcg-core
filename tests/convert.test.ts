@@ -1,36 +1,26 @@
-import { Package, PackageId, Tag } from "../src/package";
+import { Package, PackageId, Person, Tag } from "../src/package";
 import { jsonObject, jsonMember, TypedJSON } from 'typedjson';
 import { validate } from 'class-validator';
+import { classToPlain, plainToClass } from "../src";
 
 describe("test json functionality function", () => {
-    const serializer = new TypedJSON(Package);
-
     const id = new PackageId("help", "me");
     const pack = new Package(id);
     pack.thumbnail = "thumb.jpg"
+    pack.authors = [new Person("4cf42413-ae7d-4382-98b6-e40ae6e06d64", "joe smo")]
     pack.tags = [new Tag("send"), new Tag("nudes")]
 
     it("serialize id", () => {
-        const serializer = new TypedJSON(PackageId);
-
-        expect(serializer.toPlainJson(id)).toBe("help/me")
-    });
-    it("parse id", () => {
-        const serializer = new TypedJSON(PackageId);
-
-        expect(serializer.parse(JSON.stringify("help/me"))).toEqual(id)
+        expect(classToPlain(pack).name).toBe("help/me")
     });
 
-    // it("serialize package", () => {
-    //     expect(serializer.toPlainJson(pack)).toBe("help/me")
-    // });
-    it("round trip json", () => {
-        expect(serializer.parse(serializer.stringify(pack))).toEqual(pack)
+    it("round trip transform", () => {
+        const asPlain = classToPlain(pack);
+        const asClass = plainToClass(asPlain)
+        console.log(asPlain)
+        expect(asClass).toEqual(pack);
     });
-    it("round trip jobj", () => {
-        console.log(serializer.toPlainJson(pack))
-        expect(serializer.parse(serializer.toPlainJson(pack))).toEqual(pack)
-    });
+
 
     it("validate fail", async () => {
         const errors = await validate(new Package(new PackageId("tothickforlifeuwuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuutothickforlifeuwuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuutothickforlifeuwuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuutothickforlifeuwuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu", "me")));

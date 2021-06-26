@@ -1,7 +1,7 @@
 import 'reflect-metadata';
-import { jsonObject, jsonArrayMember, jsonMember, TypedJSON } from 'typedjson';
 import { ArrayMaxSize, ArrayUnique, isArray, IsBoolean, IsHash, IsMimeType, IsNumber, IsObject, IsOptional, IsString, isString, IsUrl, IsUUID, MaxLength, ValidateNested } from 'class-validator';
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Prop, Schema } from '@nestjs/mongoose';
+import { Exclude, plainToClass, Transform, TransformationType, TransformClassToPlain, TransformFnParams, Type } from 'class-transformer';
 
 import {
   validate,
@@ -18,24 +18,55 @@ import {
 export type Metadata = any;
 
 
-@jsonObject
+function BiTransformer(cls: any) {
+  return Transform((params: TransformFnParams) => {
+    const value = params.value;
+    switch (params.type) {
+      case TransformationType.CLASS_TO_PLAIN:
+        return cls.serializer(value)
+      case TransformationType.PLAIN_TO_CLASS:
+        return cls.deserializer(value)
+      default:
+        throw new Error("so that's when it happens");
+    }
+  })
+}
+
+function BiTransformerArray(cls: any) {
+  return Transform((params: TransformFnParams) => {
+    const values = params.value;
+    if (!values) return values;
+    return values.map((value: any) => {
+      switch (params.type) {
+        case TransformationType.CLASS_TO_PLAIN:
+          return cls.serializer(value)
+        case TransformationType.PLAIN_TO_CLASS:
+          return cls.deserializer(value)
+        default:
+          throw new Error("so that's when it happens");
+      }
+    });
+
+  })
+}
+
 export class File {
   @IsString()
-  @jsonMember
+
   path: string;
 
-  @jsonMember
+
   @IsNumber()
   size: number;
   /**
    * A sha256 of the file.
    */
 
-  @jsonMember
+
   @IsHash("sha256")
   hashSha256: string;
 
-  @jsonMember
+
   @IsMimeType()
   conentType: string;
 
@@ -49,18 +80,18 @@ export class File {
 
 
 
-@jsonObject
+
 export class Version {
   @IsInt()
-  @jsonMember
+
   major: number;
 
   @IsInt()
-  @jsonMember
+
   minor: number;
 
   @IsInt()
-  @jsonMember
+
   patch: number;
 
   constructor(major = 0, minor = 0, patch = 0) {
@@ -86,17 +117,13 @@ export class Version {
 
 }
 
-TypedJSON.mapType(Version, Version)
-
-
-@jsonObject
 export class PackageId {
   @MaxLength(32)
-  @jsonMember
+
   public scope: string;
 
   @MaxLength(32)
-  @jsonMember
+
   public name: string;
 
   constructor(
@@ -119,16 +146,13 @@ export class PackageId {
   }
 }
 
-TypedJSON.mapType(PackageId, PackageId)
-
-@jsonObject
 export class Funding {
   @IsUrl()
-  @jsonMember
+
   public url: string;
 
   @MaxLength(32)
-  @jsonMember
+
   public kind: string;
   constructor(url: string, kind: string = "unspecified") {
     this.url = url;
@@ -140,33 +164,35 @@ export class Funding {
 }
 
 @Schema()
-@jsonObject
+
 export class Person {
 
   /// todo: should not be optional
   @Prop()
   @IsOptional()
   @IsUUID()
-  @jsonMember @Prop()
+  @Prop()
   public id: string;
   @Prop()
   @MaxLength(32)
-  @jsonMember @Prop()
+  @Prop()
   public name: string;
   @Prop()
   @IsOptional()
   @IsEmail()
-  @jsonMember @Prop()
+  @Prop()
   public email?: string;
   @Prop()
   @IsOptional()
   @IsUrl()
-  @jsonMember @Prop()
+  @Prop()
   public website?: string;
   @Prop()
   @IsOptional()
   @ValidateNested()
-  @jsonMember @Prop()
+  @BiTransformer(Funding)
+
+  @Prop()
   public funding?: Funding;
 
   constructor(id: string, name: string) {
@@ -175,13 +201,15 @@ export class Person {
   }
 }
 
-@jsonObject
+
 export class PackageRef {
-  @jsonMember
+
+  @ValidateNested()
+  @BiTransformer(PackageId)
   public name: PackageId;
-  @jsonMember
+
   public version: Version;
-  @jsonMember
+
   public asset?: string;
 
   constructor(name: PackageId, version: Version, asset?: string) {
@@ -211,35 +239,34 @@ export class PackageRef {
     return out;
   }
 }
-TypedJSON.mapType(PackageRef, PackageRef)
 
-@jsonObject
+
 export class Asset {
   @MaxLength(32)
-  @jsonMember
+
   public name: string = "default";
 
   @MaxLength(32)
-  @jsonMember
+
   public kind: string = "other";
 
 
   @IsObject()
-  @jsonMember
+
   public data: Metadata = {};
 
   @IsObject()
-  @jsonMember
+
   public info: Metadata = {};
 
   @ValidateNested()
-  @jsonArrayMember(PackageRef)
+  @BiTransformerArray(PackageRef)
   public dependencies: PackageRef[] = [];
 }
 
-@jsonObject
+
 export class Tag {
-  @jsonMember
+
   public id: string;
   constructor(name: string) {
     this.id = name;
@@ -254,57 +281,60 @@ export class Tag {
   }
 }
 
-TypedJSON.mapType(Tag, Tag)
 
 @Schema()
-@jsonObject({ onDeserialized: "onDeserialized" })
 export class Package {
 
   @ValidateNested()
-  @jsonMember @Prop()
+  @Prop()
+  @BiTransformer(Version)
   public format: Version = new Version(1);
 
   @ValidateNested()
-  @jsonMember @Prop()
-  public version: Version = new Version();
+  @Prop()
+  @BiTransformer(Version)
+  public version: Version = new Version(0, 0, 1);
 
 
   @ValidateNested()
-  @jsonMember @Prop()
+  @BiTransformer(PackageId)
+  @Prop()
   public name: PackageId;
 
   @IsBoolean()
-  @jsonMember @Prop()
+  @Prop()
   public nsfw: boolean = false;
 
   @MaxLength(64)
-  @jsonMember @Prop()
+  @Prop()
   public title: string = "untitled";
 
   @IsString()
-  @jsonMember @Prop()
+  @Prop()
   public thumbnail?: string;
 
   @IsDate()
-  @jsonMember @Prop()
+  @Prop()
+  @Type(() => Date)
   public created: Date = new Date();
 
   @IsDate()
-  @jsonMember @Prop()
+  @Prop()
+  @Type(() => Date)
   public updated: Date = new Date();
 
   @IsBoolean()
-  @jsonMember @Prop()
+  @Prop()
   public share: boolean = true;
 
-  @IsString()  @IsOptional()
+  @IsString() @IsOptional()
   @MaxLength(256)
-  @jsonMember @Prop()
+  @Prop()
   public description?: string;
 
   @IsOptional()
   @IsUrl()
-  @jsonMember @Prop()
+  @Prop()
   public website?: string;
 
 
@@ -312,56 +342,56 @@ export class Package {
    * spdx licence expression
    */
   @IsString()
-  @jsonMember @Prop()
+  @Prop()
   public license: string = "UNLICENSED";
 
   @ValidateNested()
-  @jsonArrayMember(Person) @Prop()
+  //@BiTransformerArray(Person)
   public authors: Person[] = [];
 
   @ValidateNested()
-  @jsonArrayMember(PackageId) @Prop()
+  @BiTransformerArray(PackageId)
   public basedOn: PackageId[] = [];
 
   @IsOptional()
   @ValidateNested()
-  @jsonMember @Prop()
+  @Prop()
+  @BiTransformer(Funding)
   public funding?: Funding;
 
   @ValidateNested()
   @ArrayMaxSize(10)
   @ArrayUnique(Tag.serializer)
-  @jsonArrayMember(Tag) @Prop()
+  @BiTransformerArray(Tag)
+  @Prop()
   public tags: Tag[] = [];
 
   @ValidateNested()
-  @jsonArrayMember(Asset) @Prop()
-  public assets: Asset[] = [];
-  
   @Prop()
-  id!: string;
+  @BiTransformerArray(PackageId)
+  public assets: Asset[] = [];
+
+  get id() {
+    return PackageRef.serializer(new PackageRef(this.name, this.version))
+  }
 
   constructor(name: PackageId) {
     this.name = name;
-    this.onDeserialized();
   }
 
-  onDeserialized() {
-    const id = PackageRef.serializer(new PackageRef(this.name, this.version));
-    this.id = id;
-  }
   //dependencies?: string[];
 }
 
 @Schema()
-@jsonObject
+
 export class PackageSource {
   @ValidateNested()
-  @jsonMember @Prop()
+  @Prop()
+  @BiTransformer(PackageRef)
   ref: PackageRef;
 
   @IsUrl({ require_valid_protocol: false, require_protocol: true })
-  @jsonMember @Prop()
+  @Prop()
   source: string;
 
   constructor(ref: PackageRef, source: string) {
@@ -370,9 +400,9 @@ export class PackageSource {
   }
 }
 
-// @jsonObject
+// 
 // export interface PackageData {
-//   @jsonMember
+//   
 //   package: Package;
 
 //   @jsonArrayMember(File)

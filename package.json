@@ -1,12 +1,12 @@
 {
   "name": "@ftcg/core",
   "license": "AGPL-3.0-or-later",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "dependencies": {
     "@nestjs/mongoose": "^7.2.4",
+    "class-transformer": "^0.4.0",
     "class-validator": "^0.13.1",
-    "reflect-metadata": "^0.1.13",
-    "typedjson": "^1.7.0"
+    "reflect-metadata": "^0.1.13"
   },
   "private": false,
   "main": "./dist/index.js",
