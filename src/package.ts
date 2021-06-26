@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import { jsonObject, jsonArrayMember, jsonMember, TypedJSON } from 'typedjson';
 import { ArrayMaxSize, ArrayUnique, isArray, IsBoolean, IsHash, IsMimeType, IsNumber, IsObject, IsOptional, IsString, isString, IsUrl, IsUUID, MaxLength, ValidateNested } from 'class-validator';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 import {
   validate,
@@ -18,7 +19,6 @@ export type Metadata = any;
 
 
 @jsonObject
-
 export class File {
   @IsString()
   @jsonMember
@@ -63,7 +63,7 @@ export class Version {
   @jsonMember
   patch: number;
 
-  constructor(major = 1, minor = 0, patch = 0) {
+  constructor(major = 0, minor = 0, patch = 0) {
     this.major = major || 0;
     this.minor = minor || 0;
     this.patch = patch || 0;
@@ -139,32 +139,34 @@ export class Funding {
 
 }
 
+@Schema()
 @jsonObject
 export class Person {
 
   /// todo: should not be optional
+  @Prop()
   @IsOptional()
   @IsUUID()
-  @jsonMember
+  @jsonMember @Prop()
   public id: string;
-
+  @Prop()
   @MaxLength(32)
-  @jsonMember
+  @jsonMember @Prop()
   public name: string;
-
+  @Prop()
   @IsOptional()
   @IsEmail()
-  @jsonMember
+  @jsonMember @Prop()
   public email?: string;
-
+  @Prop()
   @IsOptional()
   @IsUrl()
-  @jsonMember
+  @jsonMember @Prop()
   public website?: string;
-
+  @Prop()
   @IsOptional()
   @ValidateNested()
-  @jsonMember
+  @jsonMember @Prop()
   public funding?: Funding;
 
   constructor(id: string, name: string) {
@@ -176,16 +178,13 @@ export class Person {
 @jsonObject
 export class PackageRef {
   @jsonMember
-  public scope: string;
-  @jsonMember
-  public name: string;
+  public name: PackageId;
   @jsonMember
   public version: Version;
   @jsonMember
   public asset?: string;
 
-  constructor(scope: string, name: string, version: Version, asset?: string) {
-    this.scope = scope;
+  constructor(name: PackageId, version: Version, asset?: string) {
     this.name = name;
     this.version = version;
     this.asset = asset;
@@ -198,15 +197,15 @@ export class PackageRef {
       const versionAsset = parts[1].split('#')
       const version = Version.deserializer(versionAsset[0]);
       const asset = versionAsset[1];
-      return new PackageRef(id.scope, id.name, version, asset);
+      return new PackageRef(new PackageId(id.scope, id.name), version, asset);
     }
     throw new Error("invalid package id");
   }
 
-  static serializer(value: PackageRef | undefined | null) {
+  static serializer(value: PackageRef | undefined | null): string {
     if (!value)
-      return value;
-    let out = `${value.scope}/${value.name}@${value.version}`;
+      return <string><any>value;
+    let out = `${PackageId.serializer(value.name)}@${Version.serializer(value.version)}`;
     if (value.asset)
       out = `${out}#${value.asset}`
     return out;
@@ -241,9 +240,9 @@ export class Asset {
 @jsonObject
 export class Tag {
   @jsonMember
-  public name: string;
+  public id: string;
   constructor(name: string) {
-    this.name = name;
+    this.id = name;
   }
 
   static deserializer(json: any) {
@@ -251,58 +250,61 @@ export class Tag {
   }
 
   static serializer(value: Tag | undefined | null) {
-    return value ? value.name : value;
+    return value ? value.id : value;
   }
 }
 
 TypedJSON.mapType(Tag, Tag)
 
-@jsonObject
+@Schema()
+@jsonObject({ onDeserialized: "onDeserialized" })
 export class Package {
+
   @ValidateNested()
-  @jsonMember
+  @jsonMember @Prop()
   public format: Version = new Version(1);
 
   @ValidateNested()
-  @jsonMember
+  @jsonMember @Prop()
   public version: Version = new Version();
 
+
   @ValidateNested()
-  @jsonMember
+  @jsonMember @Prop()
   public name: PackageId;
 
   @IsBoolean()
-  @jsonMember
+  @jsonMember @Prop()
   public nsfw: boolean = false;
 
   @MaxLength(64)
-  @jsonMember
+  @jsonMember @Prop()
   public title: string = "untitled";
 
   @IsString()
-  @jsonMember
-  public thumbnail: string = "thumb.jpg";
+  @jsonMember @Prop()
+  public thumbnail?: string;
 
   @IsDate()
-  @jsonMember
+  @jsonMember @Prop()
   public created: Date = new Date();
 
   @IsDate()
-  @jsonMember
+  @jsonMember @Prop()
   public updated: Date = new Date();
 
   @IsBoolean()
-  @jsonMember
+  @jsonMember @Prop()
   public share: boolean = true;
 
-  @IsString()
-  @MaxLength(128)
-  @jsonMember
-  public description: string = "For the common good!";
+  @IsString()  @IsOptional()
+  @MaxLength(256)
+  @jsonMember @Prop()
+  public description?: string;
 
   @IsOptional()
   @IsUrl()
-  @jsonMember
+  @jsonMember @Prop()
   public website?: string;
 
 
@@ -310,47 +312,56 @@ export class Package {
    * spdx licence expression
    */
   @IsString()
-  @jsonMember
+  @jsonMember @Prop()
   public license: string = "UNLICENSED";
 
   @ValidateNested()
-  @jsonArrayMember(Person)
+  @jsonArrayMember(Person) @Prop()
   public authors: Person[] = [];
 
   @ValidateNested()
-  @jsonArrayMember(PackageId)
+  @jsonArrayMember(PackageId) @Prop()
   public basedOn: PackageId[] = [];
 
   @IsOptional()
   @ValidateNested()
-  @jsonMember
+  @jsonMember @Prop()
   public funding?: Funding;
 
   @ValidateNested()
   @ArrayMaxSize(10)
   @ArrayUnique(Tag.serializer)
-  @jsonArrayMember(Tag)
+  @jsonArrayMember(Tag) @Prop()
   public tags: Tag[] = [];
 
   @ValidateNested()
-  @jsonArrayMember(Asset)
+  @jsonArrayMember(Asset) @Prop()
   public assets: Asset[] = [];
+  
+  @Prop()
+  id!: string;
 
   constructor(name: PackageId) {
     this.name = name;
+    this.onDeserialized();
+  }
 
+  onDeserialized() {
+    const id = PackageRef.serializer(new PackageRef(this.name, this.version));
+    this.id = id;
   }
   //dependencies?: string[];
 }
 
+@Schema()
 @jsonObject
 export class PackageSource {
   @ValidateNested()
-  @jsonMember
+  @jsonMember @Prop()
   ref: PackageRef;
 
-  @IsUrl({require_valid_protocol: false, require_protocol: true})
-  @jsonMember
+  @IsUrl({ require_valid_protocol: false, require_protocol: true })
+  @jsonMember @Prop()
   source: string;
 
   constructor(ref: PackageRef, source: string) {

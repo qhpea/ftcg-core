@@ -27,6 +27,7 @@ describe("test json functionality function", () => {
         expect(serializer.parse(serializer.stringify(pack))).toEqual(pack)
     });
     it("round trip jobj", () => {
+        console.log(serializer.toPlainJson(pack))
         expect(serializer.parse(serializer.toPlainJson(pack))).toEqual(pack)
     });
 
