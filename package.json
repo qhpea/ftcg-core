@@ -1,7 +1,7 @@
 {
   "name": "@ftcg/core",
   "license": "AGPL-3.0-or-later",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "dependencies": {
     "@nestjs/mongoose": "^7.2.4",
     "class-validator": "^0.13.1",
@@ -12,7 +12,7 @@
   "main": "./dist/index.js",
   "scripts": {
     "build": "tsc",
-    "postinstall": "tsc",
+    "postinstall": "yarn tsc",
     "clean": "tsc --build --clean",
     "test": "jest"
   },

@@ -7,6 +7,7 @@ describe("test json functionality function", () => {
 
     const id = new PackageId("help", "me");
     const pack = new Package(id);
+    pack.thumbnail = "thumb.jpg"
     pack.tags = [new Tag("send"), new Tag("nudes")]
 
     it("serialize id", () => {
