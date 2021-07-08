@@ -2,6 +2,7 @@ import 'reflect-metadata';
 import { ArrayMaxSize, ArrayUnique, isArray, IsBoolean, IsHash, IsMimeType, IsNumber, IsObject, IsOptional, IsString, isString, IsUrl, IsUUID, MaxLength, ValidateNested } from 'class-validator';
 import { Prop, Schema } from '@nestjs/mongoose';
 import { Exclude, plainToClass, Transform, TransformationType, TransformClassToPlain, TransformFnParams, Type } from 'class-transformer';
+import {Entity, PrimaryGeneratedColumn, Column} from "typeorm";
 
 import {
   validate,
@@ -51,29 +52,38 @@ function BiTransformerArray(cls: any) {
 }
 
 export class File {
-  @IsString()
+  @PrimaryGeneratedColumn()
+  id?: string;
 
+  @IsString()
+  @Column()
+  @Prop()
   path: string;
 
 
   @IsNumber()
+  @Column()
+  @Prop()
   size: number;
   /**
    * A sha256 of the file.
    */
 
 
-  @IsHash("sha256")
-  hashSha256: string;
+  @Column()
+  @Prop()
+  hash: string;
 
 
   @IsMimeType()
+  @Column()
+  @Prop()
   conentType: string;
 
   constructor(path: string, size: number, hash: string, conentType: string) {
     this.path = path;
     this.size = size;
-    this.hashSha256 = hash;
+    this.hash = hash;
     this.conentType = conentType;
   }
 }
@@ -83,15 +93,18 @@ export class File {
 
 export class Version {
   @IsInt()
-
+  @Column()
+  @Prop()
   major: number;
 
   @IsInt()
-
+  @Column()
+  @Prop()
   minor: number;
 
   @IsInt()
-
+  @Column()
+  @Prop()
   patch: number;
 
   constructor(major = 0, minor = 0, patch = 0) {
@@ -119,11 +132,13 @@ export class Version {
 
 export class PackageId {
   @MaxLength(32)
-
+  @Column()
+  @Prop()
   public scope: string;
 
   @MaxLength(32)
-
+  @Column()
+  @Prop()
   public name: string;
 
   constructor(
@@ -148,11 +163,13 @@ export class PackageId {
 
 export class Funding {
   @IsUrl()
-
+  @Column()
+  @Prop()
   public url: string;
 
   @MaxLength(32)
-
+  @Column()
+  @Prop()
   public kind: string;
   constructor(url: string, kind: string = "unspecified") {
     this.url = url;
@@ -164,35 +181,37 @@ export class Funding {
 }
 
 @Schema()
+@Entity()
 
-export class Person {
+export class User {
 
   /// todo: should not be optional
   @Prop()
   @IsOptional()
   @IsUUID()
   @Prop()
+  @Column()
   public id: string;
   @Prop()
   @MaxLength(32)
   @Prop()
+  @Column()
   public name: string;
   @Prop()
   @IsOptional()
   @IsEmail()
   @Prop()
+  @Column()
   public email?: string;
   @Prop()
   @IsOptional()
   @IsUrl()
   @Prop()
+  @Column()
   public website?: string;
-  @Prop()
-  @IsOptional()
-  @ValidateNested()
-  @BiTransformer(Funding)
 
-  @Prop()
+  @IsOptional() @ValidateNested()
+  @Prop() @BiTransformer(Funding) @Column(type => Funding)
   public funding?: Funding;
 
   constructor(id: string, name: string) {
@@ -205,11 +224,12 @@ export class Person {
 export class PackageRef {
 
   @ValidateNested()
-  @BiTransformer(PackageId)
+  @Prop() @BiTransformer(PackageId)  @Column(type => PackageId)
   public name: PackageId;
 
   public version: Version;
 
+  @Prop() @Column()
   public asset?: string;
 
   constructor(name: PackageId, version: Version, asset?: string) {
@@ -242,21 +262,24 @@ export class PackageRef {
 
 
 export class Asset {
-  @MaxLength(32)
+  @PrimaryGeneratedColumn()
+  id!: string;
 
+  @MaxLength(32)
+  @Column()
   public name: string = "default";
 
   @MaxLength(32)
-
+  @Column()
   public kind: string = "other";
 
 
   @IsObject()
-
+  @Column()
   public data: Metadata = {};
 
   @IsObject()
-
+  @Column()
   public info: Metadata = {};
 
   @ValidateNested()
@@ -347,7 +370,7 @@ export class Package {
 
   @ValidateNested()
   //@BiTransformerArray(Person)
-  public authors: Person[] = [];
+  public authors: User[] = [];
 
   @ValidateNested()
   @BiTransformerArray(PackageId)

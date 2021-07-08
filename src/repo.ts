@@ -31,7 +31,7 @@ export interface Repo {
     search(query: string): AsyncGenerator<PACKAGE.PackageRef>
     share(source : PACKAGE.PackageSource): Promise<boolean>
     yank(ref: PACKAGE.PackageRef) : Promise<boolean>
-    person(id: string): Promise<PACKAGE.Person>
+    person(id: string): Promise<PACKAGE.User>
     createScope(name: string) : Promise<boolean>
     versions(id: PACKAGE.PackageId) : Promise<PACKAGE.PackageRef[]>
     getStatistics(): Promise<RepoStats>
